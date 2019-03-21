@@ -12,9 +12,39 @@ The javascript file for the trivia handles all the game logic and drawing
 $(document).ready(function() 
 {
     /*
-        Global variables encapsulated in a singleton to protect from idiocy
+        the game object singleton
     */
     var gameInfo = {
+        timer: 0,
+        gameState: "",
+        curQuestion: null,
+        right: 0,
+        wrong: 0,
+        score: 0,
+        intervalId: null,
+        clockRunning: false,
+        startTimer: function()
+        {
+            if (!this.clockRunning) 
+            {
+                this.intervalId = setInterval(function()
+                {
+                    gameInfo.decTimer();
+                }, 1000);
+                this.clockRunning = true;
+            }          
+        },
+
+        stopTimer: function() 
+        {
+            clearInterval(this.intervalId);
+            this.clockRunning = false;
+        },
+
+        decTimer: function() 
+        {
+            --this.timer;
+        }
 
     };
     
@@ -27,7 +57,7 @@ $(document).ready(function()
         constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1) 
         {
             this.questionText = qText;
-            this.possibleResponses = shuffle(responses);
+            this.possibleResponses = this.shuffle(responses);
             this.answers = correctAns;
             this.qTime = time;
             this.worth = score; 
@@ -40,6 +70,7 @@ $(document).ready(function()
                 let j = Math.floor(Math.random() * (i + 1));
                 [arr[i], arr[j]] = [arr[j], arr[i]];
             }
+            return arr;
         }
 
         checkAns(ans)
@@ -50,6 +81,29 @@ $(document).ready(function()
             }
             return false;
         }
+
+        getTime()
+        {
+            return this.qTime;
+        }
+        getWorth()
+        {
+            return this.worth;
+        }
+
+        draw()
+        {
+            $("#qText").html(this.questionText);
+            var hook = $("#responses")
+            hook.empty();
+            hook.append("<form>");
+            for(let i in this.possibleResponses)
+            {
+                hook.append("<input type=\"radio\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
+            }
+            hook.append("<input type=\"submit\" value=\"submit\" onclick=\"validate()\">");
+            hook.append("</form>");
+        }
     }
 
     class trueFalse extends question
@@ -59,7 +113,6 @@ $(document).ready(function()
             super(qText, responses, correctAns, time, score);
             this.possibleResponses = ["True", "False"];
         }
-
     }
 
     class openResponse extends question
@@ -77,13 +130,16 @@ $(document).ready(function()
             }
             return false;
         }
-    }
 
-    class multiChoice extends question
-    {
-        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
+        draw()
         {
-            super(qText, responses, correctAns, time, score);
+            $("#qText").html(this.questionText);
+            var hook = $("#responses")
+            hook.empty();
+            hook.append("<form>");
+            hook.append("<input type=\"text\" name=\"choice\" required>" + "<br>");
+            hook.append("<input type=\"submit\" value=\"submit\" onclick=\"validate()\">");
+            hook.append("</form>");
         }
     }
 
@@ -109,7 +165,22 @@ $(document).ready(function()
             }
             return true;
         }
+
+        draw()
+        {
+            $("#qText").html(this.questionText);
+            var hook = $("#responses")
+            hook.empty();
+            hook.append("<form>");
+            for(let i in this.possibleResponses)
+            {
+                hook.append("<input type=\"checkbox\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
+            }
+            hook.append("<input type=\"submit\" value=\"submit\" onclick=\"validate()\">");
+            hook.append("</form>");
+        }
     }
 
-
+    var q = new openResponse("this is a question", ["yes", "no", "maybe"]);
+    q.draw();
 });
