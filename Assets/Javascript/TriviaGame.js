@@ -44,8 +44,55 @@ $(document).ready(function()
         decTimer: function() 
         {
             --this.timer;
-        }
+            $("#Timer").html("Time: " + this.timer);
+            if(this.timer <= 0)
+            {
+                this.submitAns();
+            }
+        },
 
+        submitAns: function()
+        {
+            let pointsEarned = this.curQuestion.submit();
+            if(pointsEarned > 0)
+            {
+                ++this.right;
+            }
+            else
+            {
+                ++this.wrong;
+            }
+            this.score += pointsEarned;
+            this.getNewQuestion();
+            this.draw();
+        },
+        getNewQuestion: function()
+        {
+            var q = new question("this is a question", ["yes", "no", "maybe"], ["yes"], 100, 5);
+            this.setQuestion(q);
+        },
+        updateStats: function()
+        {
+            $("#Stats").html("Right: " + this.right + " Wrong: " + this.wrong + " Score: " + this.score);
+        },
+
+        setQuestion: function(question)
+        {
+            this.curQuestion = question;
+            this.timer = this.curQuestion.getTime();
+        },
+
+        draw: function()
+        {
+            this.startTimer();
+            $("#Timer").html("Time: " + this.timer);
+            this.updateStats();
+            this.curQuestion.draw();
+            $("#submit").click(function()
+            {
+                gameInfo.submitAns();
+            })
+        }
     };
     
     /*
@@ -73,13 +120,20 @@ $(document).ready(function()
             return arr;
         }
 
+        submit()
+        {
+            let selected = $("input[type='radio']:checked");
+            let ans = selected.val();
+            return this.checkAns(ans);
+        }
+
         checkAns(ans)
         {
-            if(ans == correctAns[0])
+            if(ans == this.answers[0])
             {
-                return true;
+                return this.getWorth();
             }
-            return false;
+            return 0;
         }
 
         getTime()
@@ -94,15 +148,15 @@ $(document).ready(function()
         draw()
         {
             $("#qText").html(this.questionText);
-            var hook = $("#responses")
-            hook.empty();
-            hook.append("<form>");
+            var res = $("#responses")
+            res.empty();
+            res.append("<form>");
             for(let i in this.possibleResponses)
             {
-                hook.append("<input type=\"radio\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
+                res.append("<input type=\"radio\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\">" + this.possibleResponses[i] + "<br>");
             }
-            hook.append("<input type=\"submit\" value=\"submit\" onclick=\"validate()\">");
-            hook.append("</form>");
+            res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
+            res.append("</form>");
         }
     }
 
@@ -122,24 +176,31 @@ $(document).ready(function()
             super(qText, responses, correctAns, time, score);
         }
 
+        submit()
+        {
+            let selected = $("input[type='text']");
+            let ans = selected.val();
+            return this.checkAns(ans);
+        }
+
         checkAns(ans)
         {
-            if(ans.toLowerCase() == correctAns[0].toLowerCase())
+            if(ans.toLowerCase() == this.answers[0].toLowerCase())
             {
-                return true;
+                return this.getWorth();
             }
-            return false;
+            return 0;
         }
 
         draw()
         {
             $("#qText").html(this.questionText);
-            var hook = $("#responses")
-            hook.empty();
-            hook.append("<form>");
-            hook.append("<input type=\"text\" name=\"choice\" required>" + "<br>");
-            hook.append("<input type=\"submit\" value=\"submit\" onclick=\"validate()\">");
-            hook.append("</form>");
+            var res = $("#responses")
+            res.empty();
+            res.append("<form>");
+            res.append("<input type=\"text\" name=\"choice\">" + "<br>");
+            res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
+            res.append("</form>");
         }
     }
 
@@ -150,37 +211,50 @@ $(document).ready(function()
             super(qText, responses, correctAns, time, score);
         }
 
+        submit()
+        {
+            let ansArr = [];
+            let selected = $("input[type='text']");
+            $.each($("input[name='choice']:checked"), function()
+            {            
+                ansArr.push($(this).val());
+            });
+            return this.checkAns(ansArr);
+        }
         checkAns(ans)
         {
-            if(ans.length != correctAns.length)
+            if(ans.length != this.answers.length)
             {
-                return false;
+                return 0;
             }
-            for(let i in correctAns)
+            for(let i in this.answers)
             {
-                if(!(ans.indexOf(correctAns[i]) > -1))
+                if(!(ans.indexOf(this.answers[i]) > -1))
                 {
-                    return false;
+                    return 0;
                 }
             }
-            return true;
+            return this.getWorth();
         }
 
         draw()
         {
             $("#qText").html(this.questionText);
-            var hook = $("#responses")
-            hook.empty();
-            hook.append("<form>");
+            var res = $("#responses")
+            res.empty();
+            res.append("<form>");
             for(let i in this.possibleResponses)
             {
-                hook.append("<input type=\"checkbox\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
+                res.append("<input type=\"checkbox\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\">" + this.possibleResponses[i] + "<br>");
             }
-            hook.append("<input type=\"submit\" value=\"submit\" onclick=\"validate()\">");
-            hook.append("</form>");
+            res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
+            res.append("</form>");
         }
     }
 
-    var q = new openResponse("this is a question", ["yes", "no", "maybe"]);
-    q.draw();
+    var q = new question("this is a question", ["yes", "no", "maybe"], ["yes"], 5, 1);
+    gameInfo.setQuestion(q);
+
+    gameInfo.draw();
+
 });
