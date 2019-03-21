@@ -41,5 +41,75 @@ $(document).ready(function()
                 [arr[i], arr[j]] = [arr[j], arr[i]];
             }
         }
+
+        checkAns(ans)
+        {
+            if(ans == correctAns[0])
+            {
+                return true;
+            }
+            return false;
+        }
     }
+
+    class trueFalse extends question
+    {
+        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
+        {
+            super(qText, responses, correctAns, time, score);
+            this.possibleResponses = ["True", "False"];
+        }
+
+    }
+
+    class openResponse extends question
+    {
+        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
+        {
+            super(qText, responses, correctAns, time, score);
+        }
+
+        checkAns(ans)
+        {
+            if(ans.toLowerCase() == correctAns[0].toLowerCase())
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    class multiChoice extends question
+    {
+        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
+        {
+            super(qText, responses, correctAns, time, score);
+        }
+    }
+
+    class selectAll extends question
+    {
+        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
+        {
+            super(qText, responses, correctAns, time, score);
+        }
+
+        checkAns(ans)
+        {
+            if(ans.length != correctAns.length)
+            {
+                return false;
+            }
+            for(let i in correctAns)
+            {
+                if(!(ans.indexOf(correctAns[i]) > -1))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+
 });
