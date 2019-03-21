@@ -66,11 +66,13 @@ $(document).ready(function()
             this.getNewQuestion();
             this.draw();
         },
+
         getNewQuestion: function()
         {
             var q = new question("this is a question", ["yes", "no", "maybe"], ["yes"], 100, 5);
             this.setQuestion(q);
         },
+
         updateStats: function()
         {
             $("#Stats").html("Right: " + this.right + " Wrong: " + this.wrong + " Score: " + this.score);
@@ -140,6 +142,7 @@ $(document).ready(function()
         {
             return this.qTime;
         }
+
         getWorth()
         {
             return this.worth;
@@ -251,7 +254,18 @@ $(document).ready(function()
             res.append("</form>");
         }
     }
+    var request = new XMLHttpRequest()
+    request.open("GET", "https://opentdb.com/api.php?amount=10", true)
+    request.onload = function () {
+        // Begin accessing JSON data here
+        var data = JSON.parse(this.response)
+        data["results"].forEach(question => 
+        {
+            console.log(question);
+        })
+    }
 
+    request.send();
     var q = new question("this is a question", ["yes", "no", "maybe"], ["yes"], 5, 1);
     gameInfo.setQuestion(q);
 
