@@ -14,6 +14,7 @@ $(document).ready(function()
     /*
         the game object singleton
     */
+    const timePerQ = 30;
     var gameInfo = {
         timer: 0,
         gameState: "",
@@ -23,6 +24,7 @@ $(document).ready(function()
         score: 0,
         intervalId: null,
         clockRunning: false,
+        questionArray: [],
         startTimer: function()
         {
             if (!this.clockRunning) 
@@ -53,35 +55,38 @@ $(document).ready(function()
 
         submitAns: function()
         {
-            let pointsEarned = this.curQuestion.submit();
-            if(pointsEarned > 0)
+            let selected = $("input[type='radio']:checked");
+            let ans = selected.val();
+            if(ans)
             {
-                ++this.right;
+                let pointsEarned = this.curQuestion.submit(ans);
+                if(pointsEarned > 0)
+                {
+                    ++this.right;
+                }
+                else
+                {
+                    ++this.wrong;
+                }
+                this.score += pointsEarned;
+                this.getNewQuestion();
+                this.draw();
             }
-            else
-            {
-                ++this.wrong;
-            }
-            this.score += pointsEarned;
-            this.getNewQuestion();
-            this.draw();
         },
 
         getNewQuestion: function()
         {
-            var q = new question("this is a question", ["yes", "no", "maybe"], ["yes"], 100, 5);
-            this.setQuestion(q);
+            console.log(gameInfo.questionArray);
+            this.curQuestion = this.questionArray.pop();
+            if(this.curQuestion)
+            {
+                this.timer = this.curQuestion.getTime();
+            }
         },
 
         updateStats: function()
         {
             $("#Stats").html("Right: " + this.right + " Wrong: " + this.wrong + " Score: " + this.score);
-        },
-
-        setQuestion: function(question)
-        {
-            this.curQuestion = question;
-            this.timer = this.curQuestion.getTime();
         },
 
         draw: function()
@@ -122,16 +127,15 @@ $(document).ready(function()
             return arr;
         }
 
-        submit()
+        submit(ans)
         {
-            let selected = $("input[type='radio']:checked");
-            let ans = selected.val();
-            return this.checkAns(ans);
+            return this.checkAns(ans);            
         }
 
         checkAns(ans)
         {
-            if(ans == this.answers[0])
+            // why cant i use == here? this works but pisses me off
+            if(ans.includes(this.answers[0]))
             {
                 return this.getWorth();
             }
@@ -156,7 +160,7 @@ $(document).ready(function()
             res.append("<form>");
             for(let i in this.possibleResponses)
             {
-                res.append("<input type=\"radio\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\">" + this.possibleResponses[i] + "<br>");
+                res.append("<input type=\"radio\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
             }
             res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
             res.append("</form>");
@@ -248,27 +252,48 @@ $(document).ready(function()
             res.append("<form>");
             for(let i in this.possibleResponses)
             {
-                res.append("<input type=\"checkbox\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\">" + this.possibleResponses[i] + "<br>");
+                res.append("<input type=\"checkbox\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
             }
             res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
             res.append("</form>");
         }
     }
     var request = new XMLHttpRequest()
+
+    
+
     request.open("GET", "https://opentdb.com/api.php?amount=10", true)
     request.onload = function () {
         // Begin accessing JSON data here
         var data = JSON.parse(this.response)
-        data["results"].forEach(question => 
+        data["results"].forEach(ques => 
         {
-            console.log(question);
+            let arr = ques["incorrect_answers"];
+            let value = 0;
+            arr.push(ques["correct_answer"]);
+            if(ques["difficulty"] == "easy")
+            {
+                value = 1;
+            }
+            else if(ques["difficulty"] == "medium")
+            {
+                value = 2;
+            }
+            else
+            {
+                value = 3;
+            }
+
+            let q = new question(ques["question"], arr, ques["correct_answer"], timePerQ, value);
+            gameInfo.questionArray.push(q);
+            console.log(gameInfo.questionArray);
         })
+        gameInfo.getNewQuestion();
+        gameInfo.draw();
     }
 
     request.send();
-    var q = new question("this is a question", ["yes", "no", "maybe"], ["yes"], 5, 1);
-    gameInfo.setQuestion(q);
+    
 
-    gameInfo.draw();
 
 });
