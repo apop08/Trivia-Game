@@ -82,6 +82,10 @@ $(document).ready(function()
             {
                 this.timer = this.curQuestion.getTime();
             }
+            else
+            {
+                this.stopTimer();
+            }
         },
 
         updateStats: function()
