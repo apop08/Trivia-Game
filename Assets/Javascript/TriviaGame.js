@@ -98,9 +98,11 @@ $(document).ready(function()
 
         populateQuestionArray: function()
         {            
-            var request = new XMLHttpRequest();
-            var apiString = createApiCallString();
-            request.open("GET", "https://opentdb.com/api.php?" + apiString, true);
+            let request = new XMLHttpRequest();
+            var apiString = "https://opentdb.com/api.php?" + this.createApiCallString();
+            
+            request.open("GET", apiString, true);
+            
             request.onload = function () {
                 // Begin accessing JSON data here
                 var data = JSON.parse(this.response)
@@ -127,15 +129,17 @@ $(document).ready(function()
                     //console.log(gameInfo.questionArray);
                 })
                 gameInfo.getNewQuestion();
-                //gameInfo.draw();
+                gameInfo.draw();
             }
             
             request.send();
+            
+            //gameInfo.draw();
         },
 
         getNewQuestion: function()
         {
-            console.log(gameInfo.questionArray);
+            //console.log(gameInfo.questionArray);
             this.curQuestion = this.questionArray.pop();
             if(this.curQuestion)
             {
@@ -160,14 +164,14 @@ $(document).ready(function()
             this.curQuestion.draw();
             $("#submit").click(function()
             {
-                this.submitAns();
+                gameInfo.submitAns();
             })
         }
     };
     var defaultScreen = {
         draw: function()
         {
-            var categories = new XMLHttpRequest();
+            let categories = new XMLHttpRequest();
             categories.open("GET", "https://opentdb.com/api_category.php", true);
             categories.onload = function () {
                 // Begin accessing JSON data here
@@ -182,7 +186,7 @@ $(document).ready(function()
         
             categories.send();
 
-            $("#submit").click(function()
+            $("#submitQ").click(function()
             {
                 gameInfo.populateQuestionArray();
             })
