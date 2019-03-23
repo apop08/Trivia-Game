@@ -74,12 +74,33 @@ $(document).ready(function()
             }
         },
 
+        createApiCallString: function()
+        {
+            var amount = $("#trivia_amount").val();
+            var cat = $("#trivia_category").val();
+            var diff = $("#trivia_difficulty").val();
+            var type = $("#trivia_type").val();
+            var apiString = "amount=" + amount;
+            if(cat != "any")
+            {
+                apiString += "&category=" + cat;
+            }
+            if(diff != "any")
+            {
+                apiString += "&difficulty=" + diff;
+            }
+            if(type != "any")
+            {
+                apiString += "&type=" + type;
+            }
+            return apiString;
+        },
 
         populateQuestionArray: function()
-        {
-            var amount = 20;
+        {            
             var request = new XMLHttpRequest();
-            request.open("GET", "https://opentdb.com/api.php?amount=" + amount, true);
+            var apiString = createApiCallString();
+            request.open("GET", "https://opentdb.com/api.php?" + apiString, true);
             request.onload = function () {
                 // Begin accessing JSON data here
                 var data = JSON.parse(this.response)
@@ -151,7 +172,7 @@ $(document).ready(function()
             categories.onload = function () {
                 // Begin accessing JSON data here
                 var data = JSON.parse(this.response)
-                console.log(data["trivia_categories"]);
+                //console.log(data["trivia_categories"]);
                 for(i in data["trivia_categories"]) 
                 {
                     $("#trivia_category").append("<option value=\"" + data["trivia_categories"][i].id + "\">" + data["trivia_categories"][i].name + "</option>")
@@ -163,7 +184,7 @@ $(document).ready(function()
 
             $("#submit").click(function()
             {
-                gameInfo.submitAns();
+                gameInfo.populateQuestionArray();
             })
         }
 
@@ -327,7 +348,7 @@ $(document).ready(function()
         }
     }
     defaultScreen.draw();
-    gameInfo.populateQuestionArray();
+    //gameInfo.populateQuestionArray();
 
 
 
