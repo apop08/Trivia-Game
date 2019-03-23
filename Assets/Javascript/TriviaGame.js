@@ -74,6 +74,44 @@ $(document).ready(function()
             }
         },
 
+
+        populateQuestionArray: function()
+        {
+            var amount = 20;
+            var request = new XMLHttpRequest();
+            request.open("GET", "https://opentdb.com/api.php?amount=" + amount, true);
+            request.onload = function () {
+                // Begin accessing JSON data here
+                var data = JSON.parse(this.response)
+                data["results"].forEach(ques => 
+                {
+                    let arr = ques["incorrect_answers"];
+                    let value = 0;
+                    arr.push(ques["correct_answer"]);
+                    if(ques["difficulty"] == "easy")
+                    {
+                        value = 1;
+                    }
+                    else if(ques["difficulty"] == "medium")
+                    {
+                        value = 2;
+                    }
+                    else
+                    {
+                        value = 3;
+                    }
+        
+                    let q = new question(ques["question"], arr, ques["correct_answer"], timePerQ, value);
+                    gameInfo.questionArray.push(q);
+                    //console.log(gameInfo.questionArray);
+                })
+                gameInfo.getNewQuestion();
+                //gameInfo.draw();
+            }
+            
+            request.send();
+        },
+
         getNewQuestion: function()
         {
             console.log(gameInfo.questionArray);
@@ -101,11 +139,36 @@ $(document).ready(function()
             this.curQuestion.draw();
             $("#submit").click(function()
             {
-                gameInfo.submitAns();
+                this.submitAns();
             })
         }
     };
-    
+    var defaultScreen = {
+        draw: function()
+        {
+            var categories = new XMLHttpRequest();
+            categories.open("GET", "https://opentdb.com/api_category.php", true);
+            categories.onload = function () {
+                // Begin accessing JSON data here
+                var data = JSON.parse(this.response)
+                console.log(data["trivia_categories"]);
+                for(i in data["trivia_categories"]) 
+                {
+                    $("#trivia_category").append("<option value=\"" + data["trivia_categories"][i].id + "\">" + data["trivia_categories"][i].name + "</option>")
+                }
+                //gameInfo.draw();
+            }
+        
+            categories.send();
+
+            $("#submit").click(function()
+            {
+                gameInfo.submitAns();
+            })
+        }
+
+
+    }
     /*
 
     */
@@ -158,6 +221,7 @@ $(document).ready(function()
 
         draw()
         {
+            $("#Intro").empty();
             $("#qText").html(this.questionText);
             var res = $("#responses")
             res.empty();
@@ -262,42 +326,13 @@ $(document).ready(function()
             res.append("</form>");
         }
     }
-    var request = new XMLHttpRequest()
+    defaultScreen.draw();
+    gameInfo.populateQuestionArray();
+
+
 
     
 
-    request.open("GET", "https://opentdb.com/api.php?amount=10", true)
-    request.onload = function () {
-        // Begin accessing JSON data here
-        var data = JSON.parse(this.response)
-        data["results"].forEach(ques => 
-        {
-            let arr = ques["incorrect_answers"];
-            let value = 0;
-            arr.push(ques["correct_answer"]);
-            if(ques["difficulty"] == "easy")
-            {
-                value = 1;
-            }
-            else if(ques["difficulty"] == "medium")
-            {
-                value = 2;
-            }
-            else
-            {
-                value = 3;
-            }
-
-            let q = new question(ques["question"], arr, ques["correct_answer"], timePerQ, value);
-            gameInfo.questionArray.push(q);
-            console.log(gameInfo.questionArray);
-        })
-        gameInfo.getNewQuestion();
-        gameInfo.draw();
-    }
-
-    request.send();
-    
 
 
 });
