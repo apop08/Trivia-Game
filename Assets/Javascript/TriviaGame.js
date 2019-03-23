@@ -19,6 +19,7 @@ $(document).ready(function()
         timer: 0,
         gameState: "",
         curQuestion: null,
+        questions: 0,
         right: 0,
         wrong: 0,
         score: 0,
@@ -57,7 +58,7 @@ $(document).ready(function()
         {
             let selected = $("input[type='radio']:checked");
             let ans = selected.val();
-            if(ans)
+            if(ans || this.timer == 0)
             {
                 let pointsEarned = this.curQuestion.submit(ans);
                 if(pointsEarned > 0)
@@ -69,6 +70,12 @@ $(document).ready(function()
                     ++this.wrong;
                 }
                 this.score += pointsEarned;
+
+                if(this.questions == this.right + this.wrong && this.questions != 0)
+                {
+                    this.endQuiz();
+                    return;
+                }
                 this.getNewQuestion();
                 this.draw();
             }
@@ -80,6 +87,7 @@ $(document).ready(function()
             var cat = $("#trivia_category").val();
             var diff = $("#trivia_difficulty").val();
             var type = $("#trivia_type").val();
+            gameInfo.questions = parseInt(amount);
             var apiString = "amount=" + amount;
             if(cat != "any")
             {
@@ -123,18 +131,54 @@ $(document).ready(function()
                     {
                         value = 3;
                     }
-        
-                    let q = new question(ques["question"], arr, ques["correct_answer"], timePerQ, value);
+                    
+                    if(ques["type" == "boolean"])
+                    {
+                        var q = new trueFalse(ques["question"], arr, ques["correct_answer"], timePerQ, value);
+                    }
+                    else
+                    {
+                        var q = new question(ques["question"], arr, ques["correct_answer"], timePerQ, value);
+                    }
                     gameInfo.questionArray.push(q);
                     //console.log(gameInfo.questionArray);
                 })
-                gameInfo.getNewQuestion();
+
+                gameInfo.getNewQuestion()
                 gameInfo.draw();
+               
             }
             
             request.send();
             
             //gameInfo.draw();
+        },
+
+        endQuiz: function()
+        {
+            this.stopTimer();
+            $("#end").show();
+            $("#game").hide();
+            $("#endGame").text("End of Quiz, You got " + this.right + " questions right out of " + (this.right + this.wrong) + " for a total score of: " + this.score);
+        
+            $("#Restart").click(function()
+            {
+                gameInfo.reset();
+                defaultScreen.draw();
+            })
+        },
+
+        reset: function()
+        {
+            this.timer = 0;
+            this.curQuestion = null;
+            this.questions = 0;
+            this.right = 0;
+            this.wrong = 0;
+            this.score = 0;
+            this.intervalId = null;
+            this.clockRunning = false;
+            this.questionArray = [];
         },
 
         getNewQuestion: function()
@@ -144,11 +188,10 @@ $(document).ready(function()
             if(this.curQuestion)
             {
                 this.timer = this.curQuestion.getTime();
+                return false;
             }
-            else
-            {
-                this.stopTimer();
-            }
+            return true;
+            
         },
 
         updateStats: function()
@@ -158,6 +201,8 @@ $(document).ready(function()
 
         draw: function()
         {
+            $("#Intro").hide();
+            $("#game").show();
             this.startTimer();
             $("#Timer").html("Time: " + this.timer);
             this.updateStats();
@@ -172,11 +217,16 @@ $(document).ready(function()
         draw: function()
         {
             let categories = new XMLHttpRequest();
+            $("#Intro").show();
+            $("#end").hide();
             categories.open("GET", "https://opentdb.com/api_category.php", true);
             categories.onload = function () {
                 // Begin accessing JSON data here
                 var data = JSON.parse(this.response)
                 //console.log(data["trivia_categories"]);
+                $("#trivia_category").empty();
+
+                $("#trivia_category").append("<option value=\"any\">Any Category</option>");
                 for(i in data["trivia_categories"]) 
                 {
                     $("#trivia_category").append("<option value=\"" + data["trivia_categories"][i].id + "\">" + data["trivia_categories"][i].name + "</option>")
@@ -221,7 +271,12 @@ $(document).ready(function()
 
         submit(ans)
         {
-            return this.checkAns(ans);            
+            if(ans)
+            {
+                return this.checkAns(ans);
+            }
+            return 0;
+                        
         }
 
         checkAns(ans)
@@ -246,7 +301,7 @@ $(document).ready(function()
 
         draw()
         {
-            $("#Intro").empty();
+            
             $("#qText").html(this.questionText);
             var res = $("#responses")
             res.empty();
@@ -269,88 +324,6 @@ $(document).ready(function()
         }
     }
 
-    class openResponse extends question
-    {
-        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
-        {
-            super(qText, responses, correctAns, time, score);
-        }
-
-        submit()
-        {
-            let selected = $("input[type='text']");
-            let ans = selected.val();
-            return this.checkAns(ans);
-        }
-
-        checkAns(ans)
-        {
-            if(ans.toLowerCase() == this.answers[0].toLowerCase())
-            {
-                return this.getWorth();
-            }
-            return 0;
-        }
-
-        draw()
-        {
-            $("#qText").html(this.questionText);
-            var res = $("#responses")
-            res.empty();
-            res.append("<form>");
-            res.append("<input type=\"text\" name=\"choice\">" + "<br>");
-            res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
-            res.append("</form>");
-        }
-    }
-
-    class selectAll extends question
-    {
-        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
-        {
-            super(qText, responses, correctAns, time, score);
-        }
-
-        submit()
-        {
-            let ansArr = [];
-            let selected = $("input[type='text']");
-            $.each($("input[name='choice']:checked"), function()
-            {            
-                ansArr.push($(this).val());
-            });
-            return this.checkAns(ansArr);
-        }
-        checkAns(ans)
-        {
-            if(ans.length != this.answers.length)
-            {
-                return 0;
-            }
-            for(let i in this.answers)
-            {
-                if(!(ans.indexOf(this.answers[i]) > -1))
-                {
-                    return 0;
-                }
-            }
-            return this.getWorth();
-        }
-
-        draw()
-        {
-            $("#qText").html(this.questionText);
-            var res = $("#responses")
-            res.empty();
-            res.append("<form>");
-            for(let i in this.possibleResponses)
-            {
-                res.append("<input type=\"checkbox\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
-            }
-            res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
-            res.append("</form>");
-        }
-    }
     defaultScreen.draw();
     //gameInfo.populateQuestionArray();
 
