@@ -250,7 +250,7 @@ $(document).ready(function()
     class question 
     {
 
-        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1) 
+        constructor(qText, responses, correctAns, time, score) 
         {
             this.questionText = qText;
             this.possibleResponses = this.shuffle(responses);
@@ -317,7 +317,7 @@ $(document).ready(function()
 
     class trueFalse extends question
     {
-        constructor(qText = "", responses = [], correctAns = [], time = 0, score = 1)
+        constructor(qText, responses, correctAns, time, score)
         {
             super(qText, responses, correctAns, time, score);
             this.possibleResponses = ["True", "False"];
@@ -325,12 +325,4 @@ $(document).ready(function()
     }
 
     defaultScreen.draw();
-    //gameInfo.populateQuestionArray();
-
-
-
-    
-
-
-
 });
