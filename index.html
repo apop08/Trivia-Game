@@ -13,8 +13,10 @@
 
 </head>
 <body>
-
     <div class="container jumbotron">
+      <div class="row justify-content-center">
+        <div><h1>Triva Game</h1></div>
+      </div>
       <div class="row justify-content-center">
         <div class="col-7"  id="Intro">
           <form name="apiparams">
@@ -47,7 +49,7 @@
             
 
           </form>
-          <button value="submitQ" id="submitQ">Submit</button>
+          <button class="btn btn-primary" value="submitQ" id="submitQ">Start</button>
         </div>
       </div>  
       <div class="row justify-content-center" id="game">
@@ -55,17 +57,17 @@
           <div id="qText"></div>
           <div id="responses"></div>
         </div>
-        <div class="col-3"  id="Timer"></div><div class="col-2"  id="Stats"></div>
+        <div class="col-3"><div id="Timer"></div><div id="clock"></div></div><div class="col-2"  id="Stats"></div>
       </div>
       <div class="row justify-content-center" id="end">
           <div id="endGame" class="col-12 justify-content-center">
           </div>
           <div class="col-12 justify-content-center">
-          <button value="Restart" id="Restart">Restart</button>
+          <button class="btn btn-primary" value="Restart" id="Restart">Restart</button>
           </div>
       </div>
     </div>
-
+    
     <script src="Assets/Javascript/TriviaGame.js"></script>
 </body>
 </html>

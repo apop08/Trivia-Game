@@ -48,6 +48,7 @@ $(document).ready(function()
         {
             --this.timer;
             $("#Timer").html("Time: " + this.timer);
+            $('#hands').css( {"transform": "rotate(" + gameInfo.timer * 12 + "deg)"});
             if(this.timer <= 0)
             {
                 this.submitAns();
@@ -117,6 +118,7 @@ $(document).ready(function()
                 data["results"].forEach(ques => 
                 {
                     let arr = ques["incorrect_answers"];
+                    let cat = ques["category"]
                     let value = 0;
                     arr.push(ques["correct_answer"]);
                     if(ques["difficulty"] == "easy")
@@ -134,14 +136,13 @@ $(document).ready(function()
                     
                     if(ques["type" == "boolean"])
                     {
-                        var q = new trueFalse(ques["question"], arr, ques["correct_answer"], timePerQ, value);
+                        var q = new trueFalse(ques["question"], arr, ques["correct_answer"], timePerQ, value, cat);
                     }
                     else
                     {
-                        var q = new question(ques["question"], arr, ques["correct_answer"], timePerQ, value);
+                        var q = new question(ques["question"], arr, ques["correct_answer"], timePerQ, value, cat);
                     }
                     gameInfo.questionArray.push(q);
-                    //console.log(gameInfo.questionArray);
                 })
 
                 gameInfo.getNewQuestion()
@@ -151,7 +152,6 @@ $(document).ready(function()
             
             request.send();
             
-            //gameInfo.draw();
         },
 
         endQuiz: function()
@@ -183,7 +183,6 @@ $(document).ready(function()
 
         getNewQuestion: function()
         {
-            //console.log(gameInfo.questionArray);
             this.curQuestion = this.questionArray.pop();
             if(this.curQuestion)
             {
@@ -204,7 +203,11 @@ $(document).ready(function()
             $("#Intro").hide();
             $("#game").show();
             this.startTimer();
+
+            $("#clock").html("<img id=\"face\" src=\"Assets/Images/clockface.png\">\
+                              <img id=\"hands\" src=\"Assets/Images/clock.png\" id=\"clock\">");
             $("#Timer").html("Time: " + this.timer);
+            
             this.updateStats();
             this.curQuestion.draw();
             $("#submit").click(function()
@@ -222,8 +225,7 @@ $(document).ready(function()
             categories.open("GET", "https://opentdb.com/api_category.php", true);
             categories.onload = function () {
                 // Begin accessing JSON data here
-                var data = JSON.parse(this.response)
-                //console.log(data["trivia_categories"]);
+                var data = JSON.parse(this.response);
                 $("#trivia_category").empty();
 
                 $("#trivia_category").append("<option value=\"any\">Any Category</option>");
@@ -231,7 +233,6 @@ $(document).ready(function()
                 {
                     $("#trivia_category").append("<option value=\"" + data["trivia_categories"][i].id + "\">" + data["trivia_categories"][i].name + "</option>")
                 }
-                //gameInfo.draw();
             }
         
             categories.send();
@@ -250,13 +251,14 @@ $(document).ready(function()
     class question 
     {
 
-        constructor(qText, responses, correctAns, time, score) 
+        constructor(qText, responses, correctAns, time, score, cat) 
         {
             this.questionText = qText;
             this.possibleResponses = this.shuffle(responses);
             this.answers = correctAns;
             this.qTime = time;
-            this.worth = score; 
+            this.worth = score;
+            this.category = cat;
         }
 
         shuffle(arr)
@@ -281,7 +283,7 @@ $(document).ready(function()
 
         checkAns(ans)
         {
-            // why cant i use == here? this works but pisses me off
+            // why cant i use == here? this works but could potentially cause false positives
             if(ans.includes(this.answers[0]))
             {
                 return this.getWorth();
@@ -302,24 +304,25 @@ $(document).ready(function()
         draw()
         {
             
-            $("#qText").html(this.questionText);
+            $("#qText").html("Category: " + this.category +  "<br>" + this.questionText);
             var res = $("#responses")
             res.empty();
+            
             res.append("<form>");
             for(let i in this.possibleResponses)
             {
                 res.append("<input type=\"radio\" name=\"choice\" value=\"" + this.possibleResponses[i] + "\" required>" + this.possibleResponses[i] + "<br>");
             }
-            res.append("<input type=\"submit\" value=\"submit\" id=\"submit\">");
+            res.append("<input class=\"btn btn-primary\" type=\"submit\" value=\"submit\" id=\"submit\">");
             res.append("</form>");
         }
     }
 
     class trueFalse extends question
     {
-        constructor(qText, responses, correctAns, time, score)
+        constructor(qText, responses, correctAns, time, score, cat)
         {
-            super(qText, responses, correctAns, time, score);
+            super(qText, responses, correctAns, time, score, cat);
             this.possibleResponses = ["True", "False"];
         }
     }
