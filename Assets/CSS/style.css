@@ -1,6 +1,4 @@
-.jedi{
-    width: 100%;
-}
+
 .text{
     text-align: center;
     color:white;
@@ -9,33 +7,21 @@
     margin-top: 5%;
     width: 100%;
 }
-.label {
-    
-    width:100%;
-    position: absolute;
-    top: 75%;
-    left: 50%;
-    background-color:rgba(0, 0, 0, .5);
-    color: rgba(255,255,255,1);
-    text-align: center;
-    transform: translate(-50%, -50%);
-}
 
-.dmgText {
-    
-    width:100%;
-    position: absolute;
-    top: 75%;
-    left: 50%;
-    background-color:rgba(0, 0, 0, 0);
-    color: rgba(0, 0, 255, 1);
-    text-align: center;
-    transform: translate(-50%, -50%);
-}
 
+#hands {
+    top: 0;
+    left:0;
+    position:absolute;  
+
+}
+img{
+    vertical-align: bottom;   
+}
 body{
     background-color: black;
 }
 div{
     background-color: black;
+    position: relative;
 }

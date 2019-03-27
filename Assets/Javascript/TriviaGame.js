@@ -204,8 +204,6 @@ $(document).ready(function()
             $("#game").show();
             this.startTimer();
 
-            $("#clock").html("<img id=\"face\" src=\"Assets/Images/clockface.png\">\
-                              <img id=\"hands\" src=\"Assets/Images/clock.png\" id=\"clock\">");
             $("#Timer").html("Time: " + this.timer);
             
             this.updateStats();
