@@ -133,7 +133,7 @@ $(document).ready(function()
             let apiString = "https://opentdb.com/api.php?" + this.createApiCallString();
             
             request.open("GET", apiString, true);
-            
+            //doesnt matter that this isnt async since the quiz cant start till this is received anyways
             request.onload = function () {
                 // Begin accessing JSON data here
                 var data = JSON.parse(this.response)
@@ -265,6 +265,7 @@ $(document).ready(function()
             let categories = new XMLHttpRequest();
             $("#Intro").show();
             $("#end").hide();
+            //doesnt matter that this isnt async since the quiz cant start till this is received anyways
             categories.open("GET", "https://opentdb.com/api_category.php", true);
             categories.onload = function () {
                 // Begin accessing JSON data here
